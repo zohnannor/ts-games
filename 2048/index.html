@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style.css" />
+    <title>2048</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div class="wrap">
+      <div class="title">
+        <div class="name">2048</div>
+        <div class="scores">
+          <div id="score" class="score">0</div>
+          <div id="highscore" class="score highscore">0</div>
+        </div>
+      </div>
+      <div class="newGame">
+        <select id="select" class="btn">
+          <option value="4">4&times;4</option>
+          <option value="5">5&times;5</option>
+          <option value="6">6&times;6</option>
+          <option value="7">7&times;7</option>
+          <option value="8">8&times;8</option>
+          <option value="9">9&times;9</option>
+          <option value="10">10&times;10</option>
+        </select>
+        <a id="undo" class="btn">Undo</a>
+        <a class="btn newGameBtn">New Game</a>
+      </div>
+      <div class="game">
+        <div id="grid" class="grid"></div>
+        <div class="gameOver">Game Over! <a class="btn newGameBtn">New Game</a></div>
+        <div class="youWin">You Win! <a id="continue" class="btn">Continue</a></div>
+      </div>
+    </div>
+    <script src="../dist/2048.js"></script>
+  </body>
+</html>
