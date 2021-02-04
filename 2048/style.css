@@ -151,7 +151,8 @@ body {
 }
 
 .gameOver {
-  display: none;
+  visibility: hidden;
+  opacity: 0%;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -161,10 +162,12 @@ body {
   border-radius: 10px;
   background: rgb(238, 228, 218, 0.79);
   color: var(--dark-text-color);
+  transition: opacity ease 0.5s, visibility ease 0.5s;
 }
 
 .youWin {
-  display: none;
+  visibility: hidden;
+  opacity: 0%;
   position: absolute;
   top: 0;
   bottom: 0;
@@ -174,6 +177,7 @@ body {
   border-radius: 10px;
   background: rgb(203, 198, 103, 0.79);
   color: var(--dark-text-color);
+  transition: opacity ease 0.5s, visibility ease 0.5s;
 }
 
 .gameOver > .btn,

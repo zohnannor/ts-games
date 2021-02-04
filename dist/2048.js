@@ -62,7 +62,8 @@ var Game = /** @class */ (function () {
         this.grids[this.N].forEach(function (row) { return row.forEach(function (t) { return _this.$grid.appendChild(t.render()); }); });
     };
     Game.newGame = function () {
-        document.querySelector('.gameOver').style.display = 'none';
+        document.querySelector('.gameOver').style.visibility = 'hidden';
+        document.querySelector('.gameOver').style.opacity = '0%';
         document.addEventListener('keydown', onKeyDown);
         this.init(false);
         this.savetoStorage();
@@ -71,10 +72,11 @@ var Game = /** @class */ (function () {
     Game.emptyBoard = function () {
         this.grids[this.N] = [];
         this.$grid.innerHTML = '';
+        var n = 1;
         for (var i = 0; i < this.N; i++) {
             this.grids[this.N].push([]);
             for (var j = 0; j < this.N; j++) {
-                this.grids[this.N][i].push(new Tile(0));
+                this.grids[this.N][i].push(new Tile((n *= 2)));
             }
         }
     };
@@ -159,14 +161,16 @@ var Game = /** @class */ (function () {
                     _this.$grid.classList.remove('error');
                 }, 300);
             }
-            if (_this.isWin() && !_this.continues[_this.N]) {
-                document.querySelector('.youWin').style.display = 'block';
-                document.removeEventListener('keydown', onKeyDown);
-            }
             _this.moved = [];
             _this.render();
+            if (!_this.continues[_this.N] && _this.isWin()) {
+                document.querySelector('.youWin').style.visibility = 'visible';
+                document.querySelector('.youWin').style.opacity = '1';
+                document.removeEventListener('keydown', onKeyDown);
+            }
             if (_this.getEmptyCellsCoords().length === 0 && _this.isGameOver()) {
-                document.querySelector('.gameOver').style.display = 'block';
+                document.querySelector('.gameOver').style.visibility = 'visible';
+                document.querySelector('.gameOver').style.opacity = '1';
                 document.removeEventListener('keydown', onKeyDown);
             }
         }, 100);
@@ -368,7 +372,8 @@ Game.init();
 document.addEventListener('keydown', onKeyDown);
 (_c = document.querySelector('#select')) === null || _c === void 0 ? void 0 : _c.addEventListener('change', Game.handleSelect.bind(Game));
 (_d = document.querySelector('#continue')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', function () {
-    document.querySelector('.youWin').style.display = 'none';
+    document.querySelector('.youWin').style.visibility = 'hidden';
+    document.querySelector('.youWin').style.opacity = '0%';
     Game.continues[Game.N] = true;
     document.addEventListener('keydown', onKeyDown);
 });

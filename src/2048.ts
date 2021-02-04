@@ -73,7 +73,8 @@ class Game {
   }
 
   static newGame() {
-    document.querySelector<HTMLDivElement>('.gameOver')!.style.display = 'none';
+    document.querySelector<HTMLDivElement>('.gameOver')!.style.visibility = 'hidden';
+    document.querySelector<HTMLDivElement>('.gameOver')!.style.opacity = '0%';
     document.addEventListener('keydown', onKeyDown);
     this.init(false);
     this.savetoStorage();
@@ -83,10 +84,11 @@ class Game {
   static emptyBoard() {
     this.grids[this.N] = [];
     this.$grid.innerHTML = '';
+    let n = 1;
     for (let i = 0; i < this.N; i++) {
       this.grids[this.N].push([]);
       for (let j = 0; j < this.N; j++) {
-        this.grids[this.N][i].push(new Tile(0));
+        this.grids[this.N][i].push(new Tile((n *= 2)));
       }
     }
   }
@@ -176,16 +178,18 @@ class Game {
         }, 300);
       }
 
-      if (this.isWin() && !this.continues[this.N]) {
-        document.querySelector<HTMLDivElement>('.youWin')!.style.display = 'block';
-        document.removeEventListener('keydown', onKeyDown);
-      }
-
       this.moved = [];
       this.render();
 
+      if (!this.continues[this.N] && this.isWin()) {
+        document.querySelector<HTMLDivElement>('.youWin')!.style.visibility = 'visible';
+        document.querySelector<HTMLDivElement>('.youWin')!.style.opacity = '1';
+        document.removeEventListener('keydown', onKeyDown);
+      }
+
       if (this.getEmptyCellsCoords().length === 0 && this.isGameOver()) {
-        document.querySelector<HTMLDivElement>('.gameOver')!.style.display = 'block';
+        document.querySelector<HTMLDivElement>('.gameOver')!.style.visibility = 'visible';
+        document.querySelector<HTMLDivElement>('.gameOver')!.style.opacity = '1';
         document.removeEventListener('keydown', onKeyDown);
       }
     }, 100);
@@ -381,7 +385,8 @@ document.querySelector('#undo')?.addEventListener('click', Game.undo.bind(Game))
 document.addEventListener('keydown', onKeyDown);
 document.querySelector('#select')?.addEventListener('change', Game.handleSelect.bind(Game));
 document.querySelector('#continue')?.addEventListener('click', () => {
-  document.querySelector<HTMLDivElement>('.youWin')!.style.display = 'none';
+  document.querySelector<HTMLDivElement>('.youWin')!.style.visibility = 'hidden';
+  document.querySelector<HTMLDivElement>('.youWin')!.style.opacity = '0%';
   Game.continues[Game.N] = true;
   document.addEventListener('keydown', onKeyDown);
 });
