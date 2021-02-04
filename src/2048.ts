@@ -84,11 +84,10 @@ class Game {
   static emptyBoard() {
     this.grids[this.N] = [];
     this.$grid.innerHTML = '';
-    let n = 1;
     for (let i = 0; i < this.N; i++) {
       this.grids[this.N].push([]);
       for (let j = 0; j < this.N; j++) {
-        this.grids[this.N][i].push(new Tile((n *= 2)));
+        this.grids[this.N][i].push(new Tile(0));
       }
     }
   }

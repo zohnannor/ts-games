@@ -72,11 +72,10 @@ var Game = /** @class */ (function () {
     Game.emptyBoard = function () {
         this.grids[this.N] = [];
         this.$grid.innerHTML = '';
-        var n = 1;
         for (var i = 0; i < this.N; i++) {
             this.grids[this.N].push([]);
             for (var j = 0; j < this.N; j++) {
-                this.grids[this.N][i].push(new Tile((n *= 2)));
+                this.grids[this.N][i].push(new Tile(0));
             }
         }
     };
