@@ -1,3 +1,13 @@
+const choice = <T>(list: Array<T>): T => {
+  return list[Math.floor(Math.random() * list.length)];
+};
+
+const onKeyDown = (e: KeyboardEvent) => {
+  Game.handleKeyDown(e);
+};
+
+const $ = document.querySelector.bind(document);
+
 class Tile {
   value: number;
   $cell: HTMLDivElement;
@@ -33,9 +43,12 @@ type Coordinates = {
 
 class Game {
   static N: number = 4;
-  static $grid: HTMLDivElement = document.querySelector<HTMLDivElement>('#grid')!;
-  static $score: HTMLDivElement = document.querySelector<HTMLDivElement>('#score')!;
-  static $highscore: HTMLDivElement = document.querySelector<HTMLDivElement>('#highscore')!;
+  static $grid: HTMLDivElement = $<HTMLDivElement>('#grid')!;
+  static $score: HTMLDivElement = $<HTMLDivElement>('#score')!;
+  static $highscore: HTMLDivElement = $<HTMLDivElement>('#highscore')!;
+  static $gameOverScreen = $<HTMLDivElement>('.gameOver')!;
+  static $youWinScreen = $<HTMLDivElement>('.youWin')!;
+  static $selectGrid = $<HTMLSelectElement>('#select')!;
   static grids: { [x: string]: Tile[][] } = { 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [] };
   static memory: Tile[][];
   static scores: { [x: string]: number } = { 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
@@ -69,12 +82,22 @@ class Game {
 
     this.$grid.style.gridTemplateColumns = `repeat(${this.N}, 1fr)`;
 
-    this.grids[this.N].forEach(row => row.forEach(t => this.$grid.appendChild(t.render())));
+    this.grid.forEach(row => row.forEach(t => this.$grid.appendChild(t.render())));
+  }
+
+  static get grid() {
+    return this.grids[this.N];
+  }
+
+  static set grid(val: Tile[][]) {
+    this.grids[this.N] = val;
   }
 
   static newGame() {
-    document.querySelector<HTMLDivElement>('.gameOver')!.style.visibility = 'hidden';
-    document.querySelector<HTMLDivElement>('.gameOver')!.style.opacity = '0%';
+    this.$gameOverScreen!.style.visibility = 'hidden';
+    this.$gameOverScreen!.style.opacity = '0%';
+    this.$youWinScreen!.style.visibility = 'hidden';
+    this.$youWinScreen!.style.opacity = '0%';
     document.addEventListener('keydown', onKeyDown);
     this.init(false);
     this.savetoStorage();
@@ -82,12 +105,12 @@ class Game {
   }
 
   static emptyBoard() {
-    this.grids[this.N] = [];
+    this.grid = [];
     this.$grid.innerHTML = '';
     for (let i = 0; i < this.N; i++) {
-      this.grids[this.N].push([]);
+      this.grid.push([]);
       for (let j = 0; j < this.N; j++) {
-        this.grids[this.N][i].push(new Tile(0));
+        this.grid[i].push(new Tile(0));
       }
     }
   }
@@ -117,8 +140,7 @@ class Game {
       const save = JSON.parse(atob(data));
 
       this.N = save.N;
-      const select = document.querySelector<HTMLSelectElement>('#select')!;
-      select.value = this.N.toString();
+      this.$selectGrid.value = this.N.toString();
 
       save.data.forEach((score: { N: string | number; score: number; highscore: number; continue: boolean }) => {
         this.scores[score.N] = score.score;
@@ -167,37 +189,46 @@ class Game {
         return;
     }
     setTimeout(() => {
-      if (this.moved.some(v => v)) {
-        this.setRandomTile();
-        this.savetoStorage();
-      } else {
-        this.$grid.classList.add('error');
-        setTimeout(() => {
-          this.$grid.classList.remove('error');
-        }, 300);
-      }
-
-      this.moved = [];
-      this.render();
-
-      if (!this.continues[this.N] && this.isWin()) {
-        document.querySelector<HTMLDivElement>('.youWin')!.style.visibility = 'visible';
-        document.querySelector<HTMLDivElement>('.youWin')!.style.opacity = '1';
-        document.removeEventListener('keydown', onKeyDown);
-      }
-
-      if (this.getEmptyCellsCoords().length === 0 && this.isGameOver()) {
-        document.querySelector<HTMLDivElement>('.gameOver')!.style.visibility = 'visible';
-        document.querySelector<HTMLDivElement>('.gameOver')!.style.opacity = '1';
-        document.removeEventListener('keydown', onKeyDown);
-      }
+      this.afterMove();
     }, 100);
+  }
+
+  static afterMove() {
+    if (this.moved.some(v => v)) {
+      this.setRandomTile();
+      this.savetoStorage();
+    } else {
+      this.$grid.classList.add('error');
+      setTimeout(() => {
+        this.$grid.classList.remove('error');
+      }, 300);
+    }
+
+    this.moved = [];
+    this.render();
+
+    if (!this.continues[this.N] && this.isWin()) {
+      this.$youWinScreen!.style.visibility = 'visible';
+      this.$youWinScreen!.style.opacity = '1';
+      document.removeEventListener('keydown', onKeyDown);
+    } else if (this.getEmptyCellsCoords().length === 0 && this.isGameOver()) {
+      this.$gameOverScreen!.style.visibility = 'visible';
+      this.$gameOverScreen!.style.opacity = '1';
+      document.removeEventListener('keydown', onKeyDown);
+    }
+
     this.savetoStorage();
   }
 
   static undo() {
     if (this.memory.length > 0) {
-      this.grids[this.N] = this.memory;
+      this.grid = this.memory;
+      this.$gameOverScreen!.style.visibility = 'hidden';
+      this.$gameOverScreen!.style.opacity = '0%';
+      this.$youWinScreen!.style.visibility = 'hidden';
+      this.$youWinScreen!.style.opacity = '0%';
+      document.addEventListener('keydown', onKeyDown);
+      this.savetoStorage();
     }
     this.render();
   }
@@ -214,8 +245,8 @@ class Game {
   }
 
   static isWin() {
-    for (let y = 0; y < this.grids[this.N].length - 1; y++) {
-      for (let x = 0; x < this.grids[this.N].length - 1; x++) {
+    for (let y = 0; y < this.grid.length; y++) {
+      for (let x = 0; x < this.grid.length; x++) {
         if (this.tileAtCoords({ x, y }).value === 2048) {
           return true;
         }
@@ -226,11 +257,15 @@ class Game {
 
   static isGameOver(): boolean {
     let isOver = true;
-    for (let y = 0; y < this.grids[this.N].length - 1; y++) {
-      for (let x = 0; x < this.grids[this.N].length - 1; x++) {
+    for (let y = 0; y < this.grid.length; y++) {
+      for (let x = 0; x < this.grid.length - 1; x++) {
         if (this.tileAtCoords({ x, y }).value === this.tileAtCoords({ x: x + 1, y }).value) {
           isOver = false;
         }
+      }
+    }
+    for (let y = 0; y < this.grid.length - 1; y++) {
+      for (let x = 0; x < this.grid.length; x++) {
         if (this.tileAtCoords({ x, y }).value === this.tileAtCoords({ x, y: y + 1 }).value) {
           isOver = false;
         }
@@ -239,24 +274,23 @@ class Game {
     return isOver;
   }
 
-  static handleSelect(e: Event) {
+  static handleSelect(_: Event) {
     document.addEventListener('keydown', onKeyDown);
-    const select = e.target as HTMLSelectElement;
-    this.N = +select.value;
+    this.N = +this.$selectGrid.value;
     this.memory = [];
     this.savetoStorage();
     this.render();
-    select.blur();
+    this.$selectGrid.blur();
   }
 
   static getEmptyCellsCoords() {
-    return this.grids[this.N].flatMap((r, y) =>
+    return this.grid.flatMap((r, y) =>
       r.map((_, x) => [y, x]).filter(([y, x]) => this.tileAtCoords({ x, y }).value < 1)
     );
   }
 
   static move(direction: Direction) {
-    this.memory = this.grids[this.N].map(r => r.map(t => new Tile(t.value)));
+    this.memory = this.grid.map(r => r.map(t => new Tile(t.value)));
 
     const v = this.getVector(direction);
     let ys = [...Array(this.N).keys()];
@@ -277,19 +311,19 @@ class Game {
             !this.tileAtCoords(next).$tile.classList.contains('mergedTile')
           ) {
             this.moveTileVisually(this.tileAtCoords({ x, y }), v, next, { x, y });
-            this.grids[this.N][y][x] = new Tile(0);
+            this.grid[y][x] = new Tile(0);
             const mergedTile = this.tileAtCoords(next);
             mergedTile.value *= 2;
             mergedTile.$tile.classList.add('mergedTile');
             this.addToScore(mergedTile.value);
             this.moved.push(true);
           } else if (prev.x === x && prev.y === y) {
-            this.grids[this.N][y][x] = new Tile(0);
-            this.grids[this.N][y][x].value = tile.value;
+            this.grid[y][x] = new Tile(0);
+            this.grid[y][x].value = tile.value;
             this.moved.push(false);
           } else {
             this.moveTileVisually(this.tileAtCoords({ x, y }), v, prev, { x, y });
-            this.grids[this.N][y][x] = new Tile(0);
+            this.grid[y][x] = new Tile(0);
             this.tileAtCoords(prev).value = tile.value;
             this.moved.push(true);
           }
@@ -316,7 +350,7 @@ class Game {
   }
 
   static tileAtCoords({ x, y }: Coordinates) {
-    return this.grids[this.N][y][x];
+    return this.grid[y][x];
   }
 
   static getPossibleCoords({ x, y }: Coordinates, v: Vector) {
@@ -349,11 +383,11 @@ class Game {
     this.$grid.style.gridTemplateColumns = `repeat(${this.N}, 1fr)`;
     this.$grid.innerHTML = '';
 
-    if (this.grids[this.N].length === 0) {
+    if (this.grid.length === 0) {
       this.newGame();
     }
 
-    this.grids[this.N].forEach(row => {
+    this.grid.forEach(row => {
       row.forEach(t => {
         this.$grid.appendChild(t.render());
       });
@@ -368,24 +402,61 @@ class Game {
   }
 }
 
-const choice = <T>(list: Array<T>): T => {
-  return list[Math.floor(Math.random() * list.length)];
-};
+class TouchManager {
+  static x: number;
+  static y: number;
 
-const onKeyDown = (e: KeyboardEvent) => {
-  Game.handleKeyDown(e);
-};
+  static touchStart(e: TouchEvent) {
+    e.preventDefault();
+    if (e.touches.length > 1) {
+      return;
+    }
+    this.x = e.touches[0].clientX;
+    this.y = e.touches[0].clientY;
+  }
+
+  static touchEnd(e: TouchEvent) {
+    e.preventDefault();
+    if (e.touches.length > 1) {
+      return;
+    }
+    const x = e.changedTouches[0].clientX;
+    const y = e.changedTouches[0].clientY;
+
+    const dx = x - this.x;
+    const dy = y - this.y;
+
+    if (Math.abs(dx) > 50 || Math.abs(dy) > 50) {
+      if (Math.abs(dx) > Math.abs(dy)) {
+        Game.move(dx > 0 ? 'right' : 'left');
+      } else {
+        Game.move(dy > 0 ? 'down' : 'up');
+      }
+      setTimeout(() => {
+        Game.afterMove();
+      }, 100);
+      Game.savetoStorage();
+    }
+  }
+}
 
 Game.init();
+
 document.querySelectorAll('.newGameBtn')?.forEach(btn => {
   btn.addEventListener('click', Game.newGame.bind(Game));
 });
-document.querySelector('#undo')?.addEventListener('click', Game.undo.bind(Game));
+$('#undo')?.addEventListener('click', Game.undo.bind(Game));
 document.addEventListener('keydown', onKeyDown);
-document.querySelector('#select')?.addEventListener('change', Game.handleSelect.bind(Game));
-document.querySelector('#continue')?.addEventListener('click', () => {
-  document.querySelector<HTMLDivElement>('.youWin')!.style.visibility = 'hidden';
-  document.querySelector<HTMLDivElement>('.youWin')!.style.opacity = '0%';
+Game.$selectGrid.addEventListener('change', Game.handleSelect.bind(Game));
+$('#continue')?.addEventListener('click', () => {
+  Game.$youWinScreen!.style.visibility = 'hidden';
+  Game.$youWinScreen!.style.opacity = '0%';
   Game.continues[Game.N] = true;
   document.addEventListener('keydown', onKeyDown);
 });
+
+const handletouchStart = TouchManager.touchStart;
+const handletouchEnd = TouchManager.touchEnd;
+
+Game.$grid.addEventListener('touchstart', handletouchStart);
+Game.$grid.addEventListener('touchend', handletouchEnd);

@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "watch": "tsc --watch",
-    "dev": "nodemon dist"
+    "dev": "nodemon dist",
+    "build": "tsc"
   },
   "dependencies": {
     "nodemon": "^2.0.7"

@@ -19,7 +19,14 @@ var __spread = (this && this.__spread) || function () {
     for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
     return ar;
 };
-var _a, _b, _c, _d;
+var _a, _b, _c;
+var choice = function (list) {
+    return list[Math.floor(Math.random() * list.length)];
+};
+var onKeyDown = function (e) {
+    Game.handleKeyDown(e);
+};
+var $ = document.querySelector.bind(document);
 var Tile = /** @class */ (function () {
     function Tile(value) {
         this.value = value;
@@ -59,23 +66,35 @@ var Game = /** @class */ (function () {
             this.setRandomTile();
         }
         this.$grid.style.gridTemplateColumns = "repeat(" + this.N + ", 1fr)";
-        this.grids[this.N].forEach(function (row) { return row.forEach(function (t) { return _this.$grid.appendChild(t.render()); }); });
+        this.grid.forEach(function (row) { return row.forEach(function (t) { return _this.$grid.appendChild(t.render()); }); });
     };
+    Object.defineProperty(Game, "grid", {
+        get: function () {
+            return this.grids[this.N];
+        },
+        set: function (val) {
+            this.grids[this.N] = val;
+        },
+        enumerable: false,
+        configurable: true
+    });
     Game.newGame = function () {
-        document.querySelector('.gameOver').style.visibility = 'hidden';
-        document.querySelector('.gameOver').style.opacity = '0%';
+        this.$gameOverScreen.style.visibility = 'hidden';
+        this.$gameOverScreen.style.opacity = '0%';
+        this.$youWinScreen.style.visibility = 'hidden';
+        this.$youWinScreen.style.opacity = '0%';
         document.addEventListener('keydown', onKeyDown);
         this.init(false);
         this.savetoStorage();
         this.updateScore();
     };
     Game.emptyBoard = function () {
-        this.grids[this.N] = [];
+        this.grid = [];
         this.$grid.innerHTML = '';
         for (var i = 0; i < this.N; i++) {
-            this.grids[this.N].push([]);
+            this.grid.push([]);
             for (var j = 0; j < this.N; j++) {
-                this.grids[this.N][i].push(new Tile(0));
+                this.grid[i].push(new Tile(0));
             }
         }
     };
@@ -103,8 +122,7 @@ var Game = /** @class */ (function () {
         if (data !== null) {
             var save = JSON.parse(atob(data));
             this.N = save.N;
-            var select = document.querySelector('#select');
-            select.value = this.N.toString();
+            this.$selectGrid.value = this.N.toString();
             save.data.forEach(function (score) {
                 _this.scores[score.N] = score.score;
                 _this.highscores[score.N] = score.highscore;
@@ -150,34 +168,44 @@ var Game = /** @class */ (function () {
                 return;
         }
         setTimeout(function () {
-            if (_this.moved.some(function (v) { return v; })) {
-                _this.setRandomTile();
-                _this.savetoStorage();
-            }
-            else {
-                _this.$grid.classList.add('error');
-                setTimeout(function () {
-                    _this.$grid.classList.remove('error');
-                }, 300);
-            }
-            _this.moved = [];
-            _this.render();
-            if (!_this.continues[_this.N] && _this.isWin()) {
-                document.querySelector('.youWin').style.visibility = 'visible';
-                document.querySelector('.youWin').style.opacity = '1';
-                document.removeEventListener('keydown', onKeyDown);
-            }
-            if (_this.getEmptyCellsCoords().length === 0 && _this.isGameOver()) {
-                document.querySelector('.gameOver').style.visibility = 'visible';
-                document.querySelector('.gameOver').style.opacity = '1';
-                document.removeEventListener('keydown', onKeyDown);
-            }
+            _this.afterMove();
         }, 100);
+    };
+    Game.afterMove = function () {
+        var _this = this;
+        if (this.moved.some(function (v) { return v; })) {
+            this.setRandomTile();
+            this.savetoStorage();
+        }
+        else {
+            this.$grid.classList.add('error');
+            setTimeout(function () {
+                _this.$grid.classList.remove('error');
+            }, 300);
+        }
+        this.moved = [];
+        this.render();
+        if (!this.continues[this.N] && this.isWin()) {
+            this.$youWinScreen.style.visibility = 'visible';
+            this.$youWinScreen.style.opacity = '1';
+            document.removeEventListener('keydown', onKeyDown);
+        }
+        else if (this.getEmptyCellsCoords().length === 0 && this.isGameOver()) {
+            this.$gameOverScreen.style.visibility = 'visible';
+            this.$gameOverScreen.style.opacity = '1';
+            document.removeEventListener('keydown', onKeyDown);
+        }
         this.savetoStorage();
     };
     Game.undo = function () {
         if (this.memory.length > 0) {
-            this.grids[this.N] = this.memory;
+            this.grid = this.memory;
+            this.$gameOverScreen.style.visibility = 'hidden';
+            this.$gameOverScreen.style.opacity = '0%';
+            this.$youWinScreen.style.visibility = 'hidden';
+            this.$youWinScreen.style.opacity = '0%';
+            document.addEventListener('keydown', onKeyDown);
+            this.savetoStorage();
         }
         this.render();
     };
@@ -192,8 +220,8 @@ var Game = /** @class */ (function () {
         }
     };
     Game.isWin = function () {
-        for (var y = 0; y < this.grids[this.N].length - 1; y++) {
-            for (var x = 0; x < this.grids[this.N].length - 1; x++) {
+        for (var y = 0; y < this.grid.length; y++) {
+            for (var x = 0; x < this.grid.length; x++) {
                 if (this.tileAtCoords({ x: x, y: y }).value === 2048) {
                     return true;
                 }
@@ -203,11 +231,15 @@ var Game = /** @class */ (function () {
     };
     Game.isGameOver = function () {
         var isOver = true;
-        for (var y = 0; y < this.grids[this.N].length - 1; y++) {
-            for (var x = 0; x < this.grids[this.N].length - 1; x++) {
+        for (var y = 0; y < this.grid.length; y++) {
+            for (var x = 0; x < this.grid.length - 1; x++) {
                 if (this.tileAtCoords({ x: x, y: y }).value === this.tileAtCoords({ x: x + 1, y: y }).value) {
                     isOver = false;
                 }
+            }
+        }
+        for (var y = 0; y < this.grid.length - 1; y++) {
+            for (var x = 0; x < this.grid.length; x++) {
                 if (this.tileAtCoords({ x: x, y: y }).value === this.tileAtCoords({ x: x, y: y + 1 }).value) {
                     isOver = false;
                 }
@@ -215,18 +247,17 @@ var Game = /** @class */ (function () {
         }
         return isOver;
     };
-    Game.handleSelect = function (e) {
+    Game.handleSelect = function (_) {
         document.addEventListener('keydown', onKeyDown);
-        var select = e.target;
-        this.N = +select.value;
+        this.N = +this.$selectGrid.value;
         this.memory = [];
         this.savetoStorage();
         this.render();
-        select.blur();
+        this.$selectGrid.blur();
     };
     Game.getEmptyCellsCoords = function () {
         var _this = this;
-        return this.grids[this.N].flatMap(function (r, y) {
+        return this.grid.flatMap(function (r, y) {
             return r.map(function (_, x) { return [y, x]; }).filter(function (_a) {
                 var _b = __read(_a, 2), y = _b[0], x = _b[1];
                 return _this.tileAtCoords({ x: x, y: y }).value < 1;
@@ -235,7 +266,7 @@ var Game = /** @class */ (function () {
     };
     Game.move = function (direction) {
         var _this = this;
-        this.memory = this.grids[this.N].map(function (r) { return r.map(function (t) { return new Tile(t.value); }); });
+        this.memory = this.grid.map(function (r) { return r.map(function (t) { return new Tile(t.value); }); });
         var v = this.getVector(direction);
         var ys = __spread(Array(this.N).keys());
         var xs = __spread(Array(this.N).keys());
@@ -252,7 +283,7 @@ var Game = /** @class */ (function () {
                         _this.tileAtCoords(next).value === tile.value &&
                         !_this.tileAtCoords(next).$tile.classList.contains('mergedTile')) {
                         _this.moveTileVisually(_this.tileAtCoords({ x: x, y: y }), v, next, { x: x, y: y });
-                        _this.grids[_this.N][y][x] = new Tile(0);
+                        _this.grid[y][x] = new Tile(0);
                         var mergedTile = _this.tileAtCoords(next);
                         mergedTile.value *= 2;
                         mergedTile.$tile.classList.add('mergedTile');
@@ -260,13 +291,13 @@ var Game = /** @class */ (function () {
                         _this.moved.push(true);
                     }
                     else if (prev.x === x && prev.y === y) {
-                        _this.grids[_this.N][y][x] = new Tile(0);
-                        _this.grids[_this.N][y][x].value = tile.value;
+                        _this.grid[y][x] = new Tile(0);
+                        _this.grid[y][x].value = tile.value;
                         _this.moved.push(false);
                     }
                     else {
                         _this.moveTileVisually(_this.tileAtCoords({ x: x, y: y }), v, prev, { x: x, y: y });
-                        _this.grids[_this.N][y][x] = new Tile(0);
+                        _this.grid[y][x] = new Tile(0);
                         _this.tileAtCoords(prev).value = tile.value;
                         _this.moved.push(true);
                     }
@@ -293,7 +324,7 @@ var Game = /** @class */ (function () {
     };
     Game.tileAtCoords = function (_a) {
         var x = _a.x, y = _a.y;
-        return this.grids[this.N][y][x];
+        return this.grid[y][x];
     };
     Game.getPossibleCoords = function (_a, v) {
         var x = _a.x, y = _a.y;
@@ -323,10 +354,10 @@ var Game = /** @class */ (function () {
         var _this = this;
         this.$grid.style.gridTemplateColumns = "repeat(" + this.N + ", 1fr)";
         this.$grid.innerHTML = '';
-        if (this.grids[this.N].length === 0) {
+        if (this.grid.length === 0) {
             this.newGame();
         }
-        this.grids[this.N].forEach(function (row) {
+        this.grid.forEach(function (row) {
             row.forEach(function (t) {
                 _this.$grid.appendChild(t.render());
             });
@@ -338,9 +369,12 @@ var Game = /** @class */ (function () {
         this.$highscore.innerHTML = this.highscores[this.N].toString();
     };
     Game.N = 4;
-    Game.$grid = document.querySelector('#grid');
-    Game.$score = document.querySelector('#score');
-    Game.$highscore = document.querySelector('#highscore');
+    Game.$grid = $('#grid');
+    Game.$score = $('#score');
+    Game.$highscore = $('#highscore');
+    Game.$gameOverScreen = $('.gameOver');
+    Game.$youWinScreen = $('.youWin');
+    Game.$selectGrid = $('#select');
     Game.grids = { 4: [], 5: [], 6: [], 7: [], 8: [], 9: [], 10: [] };
     Game.scores = { 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
     Game.highscores = { 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
@@ -357,23 +391,56 @@ var Game = /** @class */ (function () {
     };
     return Game;
 }());
-var choice = function (list) {
-    return list[Math.floor(Math.random() * list.length)];
-};
-var onKeyDown = function (e) {
-    Game.handleKeyDown(e);
-};
+var TouchManager = /** @class */ (function () {
+    function TouchManager() {
+    }
+    TouchManager.touchStart = function (e) {
+        e.preventDefault();
+        if (e.touches.length > 1) {
+            return;
+        }
+        this.x = e.touches[0].clientX;
+        this.y = e.touches[0].clientY;
+    };
+    TouchManager.touchEnd = function (e) {
+        e.preventDefault();
+        if (e.touches.length > 1) {
+            return;
+        }
+        var x = e.changedTouches[0].clientX;
+        var y = e.changedTouches[0].clientY;
+        var dx = x - this.x;
+        var dy = y - this.y;
+        if (Math.abs(dx) > 50 || Math.abs(dy) > 50) {
+            if (Math.abs(dx) > Math.abs(dy)) {
+                Game.move(dx > 0 ? 'right' : 'left');
+            }
+            else {
+                Game.move(dy > 0 ? 'down' : 'up');
+            }
+            setTimeout(function () {
+                Game.afterMove();
+            }, 100);
+            Game.savetoStorage();
+        }
+    };
+    return TouchManager;
+}());
 Game.init();
 (_a = document.querySelectorAll('.newGameBtn')) === null || _a === void 0 ? void 0 : _a.forEach(function (btn) {
     btn.addEventListener('click', Game.newGame.bind(Game));
 });
-(_b = document.querySelector('#undo')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', Game.undo.bind(Game));
+(_b = $('#undo')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', Game.undo.bind(Game));
 document.addEventListener('keydown', onKeyDown);
-(_c = document.querySelector('#select')) === null || _c === void 0 ? void 0 : _c.addEventListener('change', Game.handleSelect.bind(Game));
-(_d = document.querySelector('#continue')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', function () {
-    document.querySelector('.youWin').style.visibility = 'hidden';
-    document.querySelector('.youWin').style.opacity = '0%';
+Game.$selectGrid.addEventListener('change', Game.handleSelect.bind(Game));
+(_c = $('#continue')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', function () {
+    Game.$youWinScreen.style.visibility = 'hidden';
+    Game.$youWinScreen.style.opacity = '0%';
     Game.continues[Game.N] = true;
     document.addEventListener('keydown', onKeyDown);
 });
+var handletouchStart = TouchManager.touchStart;
+var handletouchEnd = TouchManager.touchEnd;
+Game.$grid.addEventListener('touchstart', handletouchStart);
+Game.$grid.addEventListener('touchend', handletouchEnd);
 //# sourceMappingURL=2048.js.map

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
     <title>2048</title>
   </head>
@@ -16,7 +16,7 @@
           <div id="highscore" class="score highscore">0</div>
         </div>
       </div>
-      <div class="newGame">
+      <div class="controls">
         <select id="select" class="btn">
           <option value="4">4&times;4</option>
           <option value="5">5&times;5</option>
@@ -31,8 +31,18 @@
       </div>
       <div class="game">
         <div id="grid" class="grid"></div>
-        <div class="gameOver">Game Over! <a class="btn newGameBtn">New Game</a></div>
-        <div class="youWin">You Win! <a id="continue" class="btn">Continue</a></div>
+        <div class="endScreen gameOver">
+          <div>
+            <p>Game Over!</p>
+            <a class="btn newGameBtn">New Game</a>
+          </div>
+        </div>
+        <div class="endScreen youWin">
+          <div>
+            <p>You Win!</p>
+            <a id="continue" class="btn">Continue</a>
+          </div>
+        </div>
       </div>
     </div>
     <script src="../dist/2048.js"></script>

@@ -65,6 +65,10 @@ body {
   background-color: var(--bg-color);
 }
 
+p {
+  margin: 0;
+}
+
 .wrap {
   display: flex;
   flex-direction: column;
@@ -82,7 +86,7 @@ body {
   justify-content: space-between;
 
   margin: auto;
-  min-width: calc(4 * var(--tile-size) + 10 * var(--space));
+  min-width: calc(4 * var(--tile-size) + 9 * var(--space));
 
   font-size: 70px;
   color: var(--dark-text-color);
@@ -122,11 +126,11 @@ body {
   content: 'Highscore';
 }
 
-.newGame {
+.controls {
   display: flex;
   justify-content: flex-end;
   height: 40px;
-  min-width: calc(4 * var(--tile-size) + 10 * var(--space));
+  min-width: calc(4 * var(--tile-size) + 9 * var(--space));
   margin: 5px auto;
 }
 
@@ -150,34 +154,36 @@ body {
   margin: auto;
 }
 
-.gameOver {
+.endScreen {
+  display: flex;
+  justify-content: center;
+
   visibility: hidden;
   opacity: 0%;
+
   position: absolute;
   top: 0;
   bottom: 0;
-  padding: 85px;
+  left: 0;
+  right: 0;
+
   padding-top: 155px;
   text-align: center;
   border-radius: 10px;
-  background: rgb(238, 228, 218, 0.79);
   color: var(--dark-text-color);
+
+  -webkit-transition: opacity ease 0.5s, visibility ease 0.5s;
+  -moz-transition: opacity ease 0.5s, visibility ease 0.5s;
+  -o-transition: opacity ease 0.5s, visibility ease 0.5s;
   transition: opacity ease 0.5s, visibility ease 0.5s;
 }
 
+.gameOver {
+  background: rgb(238, 228, 218, 0.79);
+}
+
 .youWin {
-  visibility: hidden;
-  opacity: 0%;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  padding: 85px;
-  padding-top: 155px;
-  text-align: center;
-  border-radius: 10px;
   background: rgb(203, 198, 103, 0.79);
-  color: var(--dark-text-color);
-  transition: opacity ease 0.5s, visibility ease 0.5s;
 }
 
 .gameOver > .btn,
@@ -216,6 +222,9 @@ body {
   height: var(--tile-size);
 
   border-radius: 9%;
+  -webkit-transition: transform ease-out 100ms;
+  -moz-transition: transform ease-out 100ms;
+  -o-transition: transform ease-out 100ms;
   transition: transform ease-out 100ms;
 }
 
@@ -235,6 +244,9 @@ body {
 /* ANIMATIONS */
 
 .newTile {
+  -webkit-animation: newTile 100ms ease;
+  -moz-animation: newTile 100ms ease;
+  -o-animation: newTile 100ms ease;
   animation: newTile 100ms ease;
 }
 
@@ -248,6 +260,9 @@ body {
 }
 
 .mergedTile {
+  -webkit-animation: mergedTile 100ms ease;
+  -moz-animation: mergedTile 100ms ease;
+  -o-animation: mergedTile 100ms ease;
   animation: mergedTile 100ms ease;
 }
 
@@ -261,6 +276,9 @@ body {
 }
 
 .error {
+  -webkit-animation: error 300ms ease;
+  -moz-animation: error 300ms ease;
+  -o-animation: error 300ms ease;
   animation: error 300ms ease;
 }
 
@@ -373,4 +391,67 @@ body {
   background-color: var(--color-big);
   box-shadow: 0 0 30px 10px rgba(255, 227, 128, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.3333333333);
   font-size: 25px;
+}
+
+@media screen and (max-width: 520px) {
+  :root {
+    --tile-size: 20vw;
+    --space: 4px;
+  }
+
+  .controls {
+    width: 100%;
+  }
+
+  .title {
+    width: 100%;
+    font-size: 55px;
+  }
+
+  .score {
+    width: 25vw;
+  }
+
+  .cell {
+    width: 70px;
+    height: 70px;
+  }
+
+  .tile {
+    font-size: 48px;
+    width: 100%;
+    height: 100%;
+  }
+
+  .endScreen {
+    padding-top: 100px;
+  }
+
+  .t128 {
+    font-size: 34px;
+  }
+
+  .t256 {
+    font-size: 34px;
+  }
+
+  .t512 {
+    font-size: 34px;
+  }
+
+  .t1024 {
+    font-size: 25px;
+  }
+
+  .t2048 {
+    font-size: 25px;
+  }
+
+  .t4096 {
+    font-size: 25px;
+  }
+
+  .tbig {
+    font-size: 20px;
+  }
 }
