@@ -266,7 +266,7 @@ var Game = /** @class */ (function () {
     };
     Game.move = function (direction) {
         var _this = this;
-        this.memory = this.grid.map(function (r) { return r.map(function (t) { return new Tile(t.value); }); });
+        var memory = this.grid.map(function (r) { return r.map(function (t) { return new Tile(t.value); }); });
         var v = this.getVector(direction);
         var ys = __spread(Array(this.N).keys());
         var xs = __spread(Array(this.N).keys());
@@ -304,6 +304,9 @@ var Game = /** @class */ (function () {
                 }
             });
         });
+        if (this.moved.some(function (v) { return v; })) {
+            this.memory = memory;
+        }
     };
     Game.addToScore = function (value) {
         this.scores[this.N] += value;

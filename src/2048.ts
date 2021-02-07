@@ -290,7 +290,7 @@ class Game {
   }
 
   static move(direction: Direction) {
-    this.memory = this.grid.map(r => r.map(t => new Tile(t.value)));
+    const memory = this.grid.map(r => r.map(t => new Tile(t.value)));
 
     const v = this.getVector(direction);
     let ys = [...Array(this.N).keys()];
@@ -330,6 +330,10 @@ class Game {
         }
       });
     });
+
+    if (this.moved.some(v => v)) {
+      this.memory = memory;
+    }
   }
 
   private static addToScore(value: number) {
