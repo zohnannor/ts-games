@@ -55,6 +55,7 @@ class Game {
   static highscores: { [x: string]: number } = { 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
   static moved: boolean[] = [];
   static SAVE_SLOT: string = '2048-save';
+  static scoreMemory: number;
   static continues: { [x: string]: boolean } = {
     4: false,
     5: false,
@@ -223,6 +224,7 @@ class Game {
   static undo() {
     if (this.memory.length > 0) {
       this.grid = this.memory;
+      this.addToScore(-this.scoreMemory);
       this.$gameOverScreen!.style.visibility = 'hidden';
       this.$gameOverScreen!.style.opacity = '0%';
       this.$youWinScreen!.style.visibility = 'hidden';
@@ -315,7 +317,8 @@ class Game {
             const mergedTile = this.tileAtCoords(next);
             mergedTile.value *= 2;
             mergedTile.$tile.classList.add('mergedTile');
-            this.addToScore(mergedTile.value);
+            this.scoreMemory = mergedTile.value;
+            this.addToScore(this.scoreMemory);
             this.moved.push(true);
           } else if (prev.x === x && prev.y === y) {
             this.grid[y][x] = new Tile(0);
