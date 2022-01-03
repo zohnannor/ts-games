@@ -12,14 +12,17 @@ jobs:
         with:
           node-version: '15'
 
+      - name: Build app
       - run: npm run build
-      
+
+      - name: Force-add dist to git
       - run: git add -f dist/
 
       - name: Push to built branch
-        uses: Automattic/action-commit-to-branch@master
-        with:
-          branch: 'gh-pages'
-          commit_message: 'deploy'
+        uses: s0/git-publish-subdir-action@develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: self
+          BRANCH: gh-pages # The branch name where you want to push the assets
+          FOLDER: dist # The directory where your assets are generated
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
+          MESSAGE: 'deploy Build: ({sha}) {msg}' # The commit message
