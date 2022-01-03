@@ -87,6 +87,8 @@ var Game2048 = /** @class */ (function () {
         this.$youWinScreen.style.opacity = '0%';
         document.addEventListener('keydown', onKeyDown);
         this.init(false);
+        this.memory = [];
+        this.scoreMemory = 0;
         this.savetoStorage();
         this.updateScore();
     };
