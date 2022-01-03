@@ -18,11 +18,11 @@ jobs:
       - name: Force-add dist to git
         run: git add -f dist/
 
-      - name: Push to built branch
+      - name: Push to gh-pages branch
         uses: s0/git-publish-subdir-action@develop
         env:
           REPO: self
           BRANCH: gh-pages # The branch name where you want to push the assets
-          FOLDER: ../ts-games # The directory where your assets are generated
+          FOLDER: 2048 # The directory where your assets are generated
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
           MESSAGE: 'deploy Build: ({sha}) {msg}' # The commit message
