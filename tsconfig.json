@@ -7,8 +7,8 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": false,
-    "lib": ["es6", "dom", "esnext.asynciterable", "dom.iterable", "esnext"],
-    "module": "commonjs",
+    "lib": ["es6", "es5", "dom", "esnext.asynciterable", "dom.iterable", "esnext"],
+    "module": "esnext",
     "moduleResolution": "node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
@@ -16,7 +16,7 @@
     "noImplicitThis": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "dist",
+    "outDir": "./dist/",
     "resolveJsonModule": true,
     "rootDir": "src",
     "skipLibCheck": true,
@@ -27,6 +27,6 @@
     "target": "es5",
     "noEmit": false
   },
-  "exclude": ["node_modules", "build", "scripts", "acceptance-tests", "webpack", "jest", "src/setupTests.ts"],
-  "include": ["src/*"]
+  "exclude": ["node_modules", "build", "dist", "scripts", "webpack"],
+  "include": ["src/**/*.ts"]
 }

@@ -1,9 +1,9 @@
 {
-  "name": "2048",
+  "name": "ts-games",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "watch": "tsc --watch",
+    "watch": "tsc --w",
     "dev": "nodemon dist",
     "build": "tsc --outDir dist"
   },

@@ -1,12 +1,9 @@
-const choice = <T>(list: Array<T>): T => {
-  return list[Math.floor(Math.random() * list.length)];
-};
+import { choice } from './utils/choice.js';
+import { $ } from './utils/$.js';
 
 const onKeyDown = (e: KeyboardEvent) => {
-  Game.handleKeyDown(e);
+  Game2048.handleKeyDown(e);
 };
-
-const $ = document.querySelector.bind(document);
 
 class Tile {
   value: number;
@@ -41,7 +38,7 @@ type Coordinates = {
   y: number;
 };
 
-class Game {
+class Game2048 {
   static N: number = 4;
   static $grid: HTMLDivElement = $<HTMLDivElement>('#grid')!;
   static $score: HTMLDivElement = $<HTMLDivElement>('#score')!;
@@ -95,10 +92,10 @@ class Game {
   }
 
   static newGame() {
-    this.$gameOverScreen!.style.visibility = 'hidden';
-    this.$gameOverScreen!.style.opacity = '0%';
-    this.$youWinScreen!.style.visibility = 'hidden';
-    this.$youWinScreen!.style.opacity = '0%';
+    this.$gameOverScreen.style.visibility = 'hidden';
+    this.$gameOverScreen.style.opacity = '0%';
+    this.$youWinScreen.style.visibility = 'hidden';
+    this.$youWinScreen.style.opacity = '0%';
     document.addEventListener('keydown', onKeyDown);
     this.init(false);
     this.savetoStorage();
@@ -205,17 +202,16 @@ class Game {
       }, 300);
     }
 
-    this.scoreMemory = 0;
     this.moved = [];
     this.render();
 
     if (!this.continues[this.N] && this.isWin()) {
-      this.$youWinScreen!.style.visibility = 'visible';
-      this.$youWinScreen!.style.opacity = '1';
+      this.$youWinScreen.style.visibility = 'visible';
+      this.$youWinScreen.style.opacity = '1';
       document.removeEventListener('keydown', onKeyDown);
     } else if (this.getEmptyCellsCoords().length === 0 && this.isGameOver()) {
-      this.$gameOverScreen!.style.visibility = 'visible';
-      this.$gameOverScreen!.style.opacity = '1';
+      this.$gameOverScreen.style.visibility = 'visible';
+      this.$gameOverScreen.style.opacity = '1';
       document.removeEventListener('keydown', onKeyDown);
     }
 
@@ -226,10 +222,11 @@ class Game {
     if (this.memory.length > 0) {
       this.grid = this.memory;
       this.addToScore(-this.scoreMemory);
-      this.$gameOverScreen!.style.visibility = 'hidden';
-      this.$gameOverScreen!.style.opacity = '0%';
-      this.$youWinScreen!.style.visibility = 'hidden';
-      this.$youWinScreen!.style.opacity = '0%';
+      this.scoreMemory = 0;
+      this.$gameOverScreen.style.visibility = 'hidden';
+      this.$gameOverScreen.style.opacity = '0%';
+      this.$youWinScreen.style.visibility = 'hidden';
+      this.$youWinScreen.style.opacity = '0%';
       document.addEventListener('keydown', onKeyDown);
       this.savetoStorage();
     }
@@ -294,6 +291,7 @@ class Game {
 
   static move(direction: Direction) {
     const memory = this.grid.map(r => r.map(t => new Tile(t.value)));
+    let scoreMemory = 0;
 
     const v = this.getVector(direction);
     let ys = [...Array(this.N).keys()];
@@ -318,7 +316,8 @@ class Game {
             const mergedTile = this.tileAtCoords(next);
             mergedTile.value *= 2;
             mergedTile.$tile.classList.add('mergedTile');
-            this.scoreMemory += mergedTile.value;
+            scoreMemory += mergedTile.value;
+            this.addToScore(mergedTile.value);
             this.moved.push(true);
           } else if (prev.x === x && prev.y === y) {
             this.grid[y][x] = new Tile(0);
@@ -334,8 +333,9 @@ class Game {
       });
     });
 
-    if (this.moved.some(v => v)) {
+    if (this.moved.some(vec => vec)) {
       this.memory = memory;
+      this.scoreMemory = scoreMemory;
     }
   }
 
@@ -435,35 +435,35 @@ class TouchManager {
 
     if (Math.abs(dx) > 50 || Math.abs(dy) > 50) {
       if (Math.abs(dx) > Math.abs(dy)) {
-        Game.move(dx > 0 ? 'right' : 'left');
+        Game2048.move(dx > 0 ? 'right' : 'left');
       } else {
-        Game.move(dy > 0 ? 'down' : 'up');
+        Game2048.move(dy > 0 ? 'down' : 'up');
       }
       setTimeout(() => {
-        Game.afterMove();
+        Game2048.afterMove();
       }, 100);
-      Game.savetoStorage();
+      Game2048.savetoStorage();
     }
   }
 }
 
-Game.init();
+Game2048.init();
 
 document.querySelectorAll('.newGameBtn')?.forEach(btn => {
-  btn.addEventListener('click', Game.newGame.bind(Game));
+  btn.addEventListener('click', Game2048.newGame.bind(Game2048));
 });
-$('#undo')?.addEventListener('click', Game.undo.bind(Game));
+$('#undo')?.addEventListener('click', Game2048.undo.bind(Game2048));
 document.addEventListener('keydown', onKeyDown);
-Game.$selectGrid.addEventListener('change', Game.handleSelect.bind(Game));
+Game2048.$selectGrid.addEventListener('change', Game2048.handleSelect.bind(Game2048));
 $('#continue')?.addEventListener('click', () => {
-  Game.$youWinScreen!.style.visibility = 'hidden';
-  Game.$youWinScreen!.style.opacity = '0%';
-  Game.continues[Game.N] = true;
+  Game2048.$youWinScreen.style.visibility = 'hidden';
+  Game2048.$youWinScreen.style.opacity = '0%';
+  Game2048.continues[Game2048.N] = true;
   document.addEventListener('keydown', onKeyDown);
 });
 
 const handletouchStart = TouchManager.touchStart;
 const handletouchEnd = TouchManager.touchEnd;
 
-Game.$grid.addEventListener('touchstart', handletouchStart);
-Game.$grid.addEventListener('touchend', handletouchEnd);
+Game2048.$grid.addEventListener('touchstart', handletouchStart);
+Game2048.$grid.addEventListener('touchend', handletouchEnd);
