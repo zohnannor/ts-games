@@ -1,0 +1,15 @@
+{
+  "name": "ts-games",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "watch": "tsc --w",
+    "dev": "nodemon dist",
+    "build": "tsc --outDir dist"
+  },
+  "devDependencies": {
+    "@types/node": "^12.0.0",
+    "nodemon": "^2.0.7",
+    "typescript": "^4.1.3"
+  }
+}
