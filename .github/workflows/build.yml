@@ -13,10 +13,10 @@ jobs:
           node-version: '15'
 
       - name: Build app
-      - run: npm run build
+        run: npm run build
 
       - name: Force-add dist to git
-      - run: git add -f dist/
+        run: git add -f dist/
 
       - name: Push to built branch
         uses: s0/git-publish-subdir-action@develop
